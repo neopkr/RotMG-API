@@ -134,6 +134,20 @@ export class RealmEyeWrapper {
         return instance;
     }
 
+    static async Exist(ign: string): Promise<boolean> {
+        const req_headers = {
+            'User-Agent': 'Mozilla/5.0'
+        }
+
+        const req = await axios.get(`https://www.realmeye.com/player/${ign}`, { headers: req_headers });
+        const $ = cheerio.load(req.data);
+        if ($('.player-not-found').length > 0) {
+            return false;
+        }
+        
+        return true;
+    }
+
     private async getPlayerInfo(): Promise<any> {
         const req_headers = {
             'User-Agent': 'Mozilla/5.0'
@@ -242,6 +256,7 @@ export class RealmEyeWrapper {
      * @description Get current player_stats and fix some text or numbers.
      */
     private Modifiers() : void {
+        this.player_stats.name = this.player_name;
         if (this.player_stats.guild != undefined) {
             if (this.player_stats.guild.includes(this.player_stats.guild_rank!)) {
                 this.player_stats.guild = this.player_stats.guild.replace(this.player_stats.guild_rank!, "");
@@ -252,7 +267,7 @@ export class RealmEyeWrapper {
     private extractNumericValue($: cheerio.CheerioAPI, label: string): number | undefined {
         const cell = $(`td:contains("${label}")`).next();
         let value;
-        if (cell.text().includes("th")) {
+        if (cell.text().includes("(")) {
             value = cell.text().split(" ")[0]; // Split the space and leave the current value
             value = Number(value) // Convert text to number
         } else {
