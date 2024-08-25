@@ -160,6 +160,9 @@ export class RealmEyeWrapper {
     }
 
     private getCharacterInfo($: cheerio.CheerioAPI): void {
+        if (this.player_stats.characters == 0)
+            return;
+        
         const table = $('table.table.table-striped.tablesorter');
         table.find('tbody').each((_, tbody) => {
             $(tbody).find('tr').each((_, element) => {
