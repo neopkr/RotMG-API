@@ -14,3 +14,4 @@
 
 ## Todo: Important Errors
 - [ ] [Issue #2 - Error parsing .span-player-stats](https://github.com/neopkr/RotMG-API/issues/2)
+- [ ] [Issue #3 - Error: socket hang up](https://github.com/neopkr/RotMG-API/issues/3#issue-2485006888)
