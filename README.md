@@ -3,9 +3,11 @@
 ## Todo:
 - [ ] Domain?
 - [ ] Do a better page at / route
+- [ ] Clean code / refactor
+- [x] Rename data.ts to wrapper.ts
 - [ ] Add Pet To the Character if its available
 - [ ] Wrapper: RealmEyeWrapperSkins
-- [ ] Wrapper: RealmEyeWrapperExaltations
+- [x] Wrapper: RealmEyeWrapperExaltations
 - [ ] Wrapper: RealmEyeWrapperOffers
 - [ ] Wrapper: RealmEyeWrapperPets
 - [ ] Wrapper: RealmEyeWrapperGraveyard

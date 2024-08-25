@@ -104,6 +104,11 @@ export interface CharacterStat {
     dex_bonus: number | undefined;
 }
 
+// Make Request Headers global
+const req_headers = {
+    'User-Agent': 'Mozilla/5.0'
+}
+
 /**
  * Wrapper for Player Stats and Characters
  */
@@ -134,25 +139,7 @@ export class RealmEyeWrapper {
         return instance;
     }
 
-    static async Exist(ign: string): Promise<boolean> {
-        const req_headers = {
-            'User-Agent': 'Mozilla/5.0'
-        }
-
-        const req = await axios.get(`https://www.realmeye.com/player/${ign}`, { headers: req_headers });
-        const $ = cheerio.load(req.data);
-        if ($('.player-not-found').length > 0) {
-            return false;
-        }
-        
-        return true;
-    }
-
-    private async getPlayerInfo(): Promise<any> {
-        const req_headers = {
-            'User-Agent': 'Mozilla/5.0'
-        }
-
+    private async getPlayerInfo(): Promise<void> {
         const req = await axios.get(`https://www.realmeye.com/player/${this.player_name}`, { headers: req_headers });
         if (req.status == 200) {
             const $ = cheerio.load(req.data);
@@ -300,9 +287,118 @@ export class RealmEyeWrapper {
 export class RealmEyeWrapperSkins {}
 
 /**
+ * Character Exaltations
+ */
+interface CharacterExaltations {
+    /** Skins unique identifier */
+    skin_id: number | undefined;
+    
+    /** Class name  */
+    class_: string | undefined;
+
+    /** Total of exalts with the class */
+    exalts: number | undefined;
+
+    /** Exalt HP */
+    hp: string | undefined;
+
+    /** Exalt MP */
+    mp: string | undefined;
+
+    /** Exalt Attack */
+    att: string | undefined;
+
+    /** Exalt Defense */
+    def: string | undefined;
+
+    /** Exalt Speed */
+    spd: string | undefined;
+
+    /** Exalt Dextery */
+    dex: string | undefined;
+
+    /** Exalt Vitality */
+    vit: string | undefined;
+
+    /** Exalt Wisdom */
+    wis: string | undefined;
+}
+
+/**
  * Wrapper for Exaltations of player
  */
-export class RealmEyeWrapperExaltations {}
+export class RealmEyeWrapperExaltations {
+    player_name: string;
+    characters: CharacterExaltations[] = [];
+    json_: any = {
+        player: "",
+        exaltations: "",
+        percent: "",
+        exalts: this.characters
+    }
+
+    constructor(ign: string) {
+        this.player_name = ign;
+    }
+
+    static async Get(ign: string): Promise<RealmEyeWrapperExaltations> {
+        const instance = new RealmEyeWrapperExaltations(ign);
+        await instance.getCharacters();
+        return instance;
+    }
+
+    private async getCharacters(): Promise<void> {
+        const req = await axios.get(`https://www.realmeye.com/exaltations-of/${this.player_name}`, { headers: req_headers });
+        if (req.status == 200) {
+            const $ = cheerio.load(req.data);
+
+            this.json_.player = this.player_name;
+            if ($("h3").text() != "Exaltations are hidden") {
+                this.json_.exaltations = $("h3").text().split("~")[0].trim().split(":")[1].trim(); // should be only the exalts that player have and another variable for the maximum exalts?
+                this.json_.percent = $("h3").text().split("~")[1];
+            } else {
+                this.json_ = {
+                    player: this.player_name,
+                    error: "This player has exaltations hidden"
+                };
+
+                return;
+            }
+
+            const table = $('table.table.table-striped.tablesorter');
+            table.find('tbody').each((_, tbody) => {
+                $(tbody).find('tr').each((_, element) => {
+                    const charExalt: CharacterExaltations = {
+                        skin_id: undefined,
+                        class_: undefined,
+                        exalts: undefined,
+                        hp: undefined,
+                        mp: undefined,
+                        att: undefined,
+                        def: undefined,
+                        spd: undefined,
+                        dex: undefined,
+                        vit: undefined,
+                        wis: undefined
+                    }
+                    charExalt.skin_id = parseInt($(element).find('a.character').attr('data-skin') || '0', 10);
+                    charExalt.class_ = $(element).find('td').eq(1).text();
+                    charExalt.exalts = parseInt($(element).find('td').eq(2).text());
+                    charExalt.hp = $(element).find('td').eq(3).text() || '0';
+                    charExalt.mp = $(element).find('td').eq(4).text() || '0';
+                    charExalt.att = $(element).find('td').eq(5).text() || '0';
+                    charExalt.def = $(element).find('td').eq(6).text() || '0';
+                    charExalt.spd = $(element).find('td').eq(7).text() || '0';
+                    charExalt.dex = $(element).find('td').eq(8).text() || '0';
+                    charExalt.vit = $(element).find('td').eq(9).text() || '0';
+                    charExalt.wis = $(element).find('td').eq(10).text() || '0';
+
+                    this.characters.push(charExalt);
+                });
+            });
+        }
+    }
+}
 
 /**
  * Wrapper for Offers that the players has
@@ -319,3 +415,18 @@ export class RealmEyeWrapperPets {}
  * Limit: 10
  */
 export class RealmEyeWrapperGraveyard {}
+
+// Utils
+export async function Exist(ign: string): Promise<boolean> {
+    const req_headers = {
+        'User-Agent': 'Mozilla/5.0'
+    }
+
+    const req = await axios.get(`https://www.realmeye.com/player/${ign}`, { headers: req_headers });
+    const $ = cheerio.load(req.data);
+    if ($('.player-not-found').length > 0) {
+        return false;
+    }
+    
+    return true;
+}
