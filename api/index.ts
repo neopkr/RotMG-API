@@ -55,6 +55,6 @@ app.all('*', (req: Request, res: Response) => {
 
 
 if (process.env.PROD == "false")
-    app.listen(5000, () => console.log("Server ready on port 3000 ~ 5000"));
+    app.listen(8000, () => console.log("Server ready on port 3000 ~ 8000"));
 
 export default app;

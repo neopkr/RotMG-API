@@ -45,8 +45,12 @@ export interface PlayerStats {
 /**
  * PlayerCharacter Interface
  * @description Map for Characters
+ * @ignore pet_name can not be added, the span.pet in the attr title has the pet name, but this name is added by javascript so cheerio can't grab it.
  */
 export interface PlayerCharacter {
+    /** Pet data id */
+    pet_id: number | undefined;
+
     /** Skin Unique Indentifier */
     skin_id: number | undefined;
 
@@ -167,6 +171,7 @@ export class RealmEyeWrapper {
         table.find('tbody').each((_, tbody) => {
             $(tbody).find('tr').each((_, element) => {
                 const charInfo: PlayerCharacter = {
+                    pet_id: undefined,
                     skin_id: undefined,
                     char_class: undefined,
                     level: undefined,
@@ -180,9 +185,8 @@ export class RealmEyeWrapper {
                 };
 
                 charInfo.skin_id = parseInt($(element).find('a.character').attr('data-skin') || '0', 10);
-                // if 1 is null == has pet
                 if ($(element).find('td').eq(1).text() == "") {
-                    // add pet at 1
+                    charInfo.pet_id = parseInt($(element).find('span.pet').attr('data-item') || '0', 10);
                     charInfo.char_class = $(element).find('td').eq(2).text();
                     charInfo.level = parseInt($(element).find('td').eq(3).text() || '0', 10);
                     charInfo.fame = parseInt($(element).find('td').eq(4).text() || '0', 10);
@@ -406,10 +410,26 @@ export class RealmEyeWrapperExaltations {
 /**
  * Wrapper for Offers that the players has
  */
-export class RealmEyeWrapperOffers {}
+export class RealmEyeWrapperOffers {
+    player_name: string;
+    constructor(ign: string) {
+        this.player_name = ign;
+    }
+
+    static async Get(ign: string): Promise<RealmEyeWrapperOffers> {
+        const instance = new RealmEyeWrapperOffers(ign);
+        await instance.getOffers();
+        return instance;
+    }
+
+    private async getOffers() {
+        
+    }
+}
 
 /**
  * Wrapper for Pets of player
+ * @ignore this class can use pet_id to identifier the "main" pet.
  */
 export class RealmEyeWrapperPets {}
 
