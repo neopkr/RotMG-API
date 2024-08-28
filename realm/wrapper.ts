@@ -139,6 +139,9 @@ export class RealmEyeWrapper {
 
     static async Get(ign: string): Promise<RealmEyeWrapper> {
         const instance = new RealmEyeWrapper(ign);
+        if (!await Exist(ign)) {
+            return instance;
+        }
         await instance.getPlayerInfo();
         return instance;
     }
@@ -164,9 +167,6 @@ export class RealmEyeWrapper {
     }
 
     private getCharacterInfo($: cheerio.CheerioAPI): void {
-        if (this.player_stats.characters == 0)
-            return;
-        
         const table = $('table.table.table-striped.tablesorter');
         table.find('tbody').each((_, tbody) => {
             $(tbody).find('tr').each((_, element) => {
@@ -350,6 +350,12 @@ export class RealmEyeWrapperExaltations {
 
     static async Get(ign: string): Promise<RealmEyeWrapperExaltations> {
         const instance = new RealmEyeWrapperExaltations(ign);
+
+        // Check anyway the entrance of the user input
+        if (!await Exist(ign)) {
+            return instance;
+        }
+
         await instance.getCharacters();
         return instance;
     }
@@ -418,6 +424,9 @@ export class RealmEyeWrapperOffers {
 
     static async Get(ign: string): Promise<RealmEyeWrapperOffers> {
         const instance = new RealmEyeWrapperOffers(ign);
+        if (!await Exist(ign)) {
+            return instance;
+        }
         await instance.getOffers();
         return instance;
     }
